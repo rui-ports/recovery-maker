@@ -1,0 +1,56 @@
+name: Building recovery
+
+on:
+#  release:
+#    types: [published]
+#  push:
+#    branches:
+#      - master
+#    paths:
+#      - '.config'
+#  schedule:
+#    - cron: 0 8 * * 5
+  watch:
+    types: [started]
+
+env:
+  MANIFEST: git://github.com/SKYHAWK-Recovery-Project/platform_manifest_twrp_omni.git -b android-9.0
+  DEVICE: CPH1861
+  DT_LINK: https://github.com/JamieHoSzeYui/dummy_CPH1861_TWRP
+  DT_PATH: device/oppo/CPH1861
+  TARGET: recoveryimage
+  TZ: Asia/Kolkata
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+       - name: Checkout
+         uses: actions/checkout@master
+         
+       - name: Initializing environment
+         run: |
+            sudo -E apt-get -qq update
+            sudo -E apt-get -qq install bc build-essential zip curl libstdc++6 git wget python gcc clang libssl-dev repo rsync flex curl  bison aria2
+            sudo curl --create-dirs -L -o /usr/local/bin/repo -O -L https://storage.googleapis.com/git-repo-downloads/repo
+            sudo chmod a+rx /usr/local/bin/repo
+            
+       - name: Sync recovery source and device tree
+         run: |
+             mkdir work
+             cd work
+             repo init -u $MANIFEST --depth=1 --groups=all,-notdefault,-device,-darwin,-x86,-mips
+             repo sync -j4
+             git clone $DT_LINK --depth=1 --single-branch $DT_PATH
+             
+       - name: Build
+         run: |
+              cd work
+              . build/envsetup.sh &&lunch omni_$DEVICE-eng &&export ALLOW_MISSING_DEPENDENCIES=true && mka $TARGET
+             
+       - name: Upload recovery image
+         run: |
+              cd work/out/target/product/$DEVICE
+              curl -sL https://git.io/file-transfer | sh
+              ./transfer bit *$DEVICE*.zip    

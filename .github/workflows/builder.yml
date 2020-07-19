@@ -15,9 +15,9 @@ on:
 
 env:
   MANIFEST: git://github.com/SKYHAWK-Recovery-Project/platform_manifest_twrp_omni.git -b android-9.0
-  DEVICE: CPH1861
-  DT_LINK: https://github.com/JamieHoSzeYui/dummy_CPH1861_TWRP
-  DT_PATH: device/oppo/CPH1861
+  DEVICE: ysl
+  DT_LINK: https://github.com/qrovic/android_device_xiaomi_ysl-twrp
+  DT_PATH: device/xiaomi/ysl
   TARGET: recoveryimage
   TZ: Asia/Kolkata
 
